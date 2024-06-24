@@ -8,7 +8,7 @@
 - jak kształtują się zarobki dla wybranych zmiennych w zleżności od roku, poziomu doświadczenia, rodzaju zatrudnienia, pracy zdalnej, wielkości firmy.
 - dodatkowo sprawdzimy czy istnieje związek pomiedzy danym rokiem a pracą zdalną /2020 a 2021 czyli czas pandemii i rokiem 2022 po pandemii/
 - czy istnieje związek pomiedzy pracą zdalną a wielkością firmy
-- czy istnieje związaek pomiędzy pracą zdalną a poziomem doświadczenia pracownika
+- czy istnieje związek pomiędzy pracą zdalną a poziomem doświadczenia pracownika
 - dzieki temu sprawdzimy jak zmieniała się płaca na przełomach lat, w zależności od wielkości firmy i poziomu doświadczenia pracownika
 
 ```
@@ -118,7 +118,7 @@ Big Data Architect,1
 - w którym kraju zarabia się najwięcej
 - czy istnieje związek pomiędzy wielkością firmy a zrobkami
 - czy poziom zarobków zmienia się z biegiem lat, jeżeli tak to w jaki sposób
-- następnie zrobimy analizę eksloracyjną i wnioskowanie statystyczne
+- następnie zrobimy analizę eksploracyjną i wnioskowanie statystyczne
 # Przetworzenie danych
 ## Oczyszczamy dane
 - sprawdzamy duplikaty
@@ -163,6 +163,7 @@ WHERE records > 1;
 ```
 - sprawdzamy braki w danych
 - błędne dane pod kątem wartości null, pustych znaków, białych znaków
+- zmienimy typy danych jeżeli będzie to konieczne
 - zmieniamy kodowanie dla trzech zmiennych, opiszemy pełnymi nazwami:
 ```
 UPDATE data_science_salaries
@@ -267,12 +268,6 @@ GROUP BY salary_in_usd_range;
 - najwięcej zarabia się w dużych firmach
 - najwięcej zarabie się na kierowniczych stanowiskach, ale najbardziej obsadzone są stanowiska data enegineer, data scientist, dana analyst i najwięcej zarabia data engineer
 - najwięcej jest osób które zarabiają w przedziale 50k - 100k usd/y
-
-
-
-
-- 
-
 
 
 
