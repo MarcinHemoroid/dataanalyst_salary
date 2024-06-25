@@ -259,7 +259,7 @@ SELECT salary_in_usd_range, COUNT(*) AS observations
 FROM data_science_salaries
 GROUP BY salary_in_usd_range;
 ```
-# Wnioski
+## Wnioski
 - najwyższe zarobki notujemy w 2022
 - przy awansie można liczyć na około 36% wzrost wynagrodzenia
 - patrząc na niepoprawną reprezentację danych jeżeli chodzi o typ zatrudnienia, wyniki są zakłamane i nie chcemy wyciągać wniosków z tej zmiennej
@@ -269,7 +269,7 @@ GROUP BY salary_in_usd_range;
 - najwięcej zarabie się na kierowniczych stanowiskach, ale najbardziej obsadzone są stanowiska data enegineer, data scientist, dana analyst i najwięcej zarabia data engineer
 - najwięcej jest osób które zarabiają w przedziale 50k - 100k usd/y
 
-# Wnioskowanie statystyczne
+## Wnioskowanie statystyczne
 - zbadamy relacje pomiędzy zmiennymi jakościowymi
 - następnie przejdziemy od badania zmiennych ilościowych
 
@@ -342,7 +342,7 @@ FROM (SELECT (r1t * c1t) / rct AS ef_r1c1,
 - istnieje istotna zależność pomiędzy danym rokiem a wielkością firmy
 - istnieje istotna zależność pomiędzy danym rokiem a poziomeme doświadczenia
 - istnieje istotna zależność pomiędzy danym rokiem a stanowiskiem
-# Sprawdzamy korelację pomiędzy zarobkami i danym rokiem
+## Sprawdzamy korelację pomiędzy zarobkami i danym rokiem
 - pytanie czy w kolejnych latach zarobki się zmieniały, a jeżeli tak to jak
 - obliczymmy statystykę Pearsona dla work_year i salary_in_usd
 
@@ -395,7 +395,9 @@ FROM statistics;
 - mamy stopnie swobody df
 - sprawdzamy w tabeli
 - nie możemy uznać testu t za istotny statystycznie, zatem nie możemy uznać że istnieją istotne różnice pomiędzy zarobkami dla pracy stancjonarnej i dla pracy zdalnej dla 2020, 2021, ale w 2022 istnieją statystycznie istotne różnice dla pracy zdalnej i pracy stacjonarnej
-#Podsumowanie
+  
+## Podsumowanie
+
 - w brażny analiz danych zarabia się co raz więcej
 - najbardziej popularnym stanowiskiem jest data scientist
 - najwięcej zarobi data engineer
