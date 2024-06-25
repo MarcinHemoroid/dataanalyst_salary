@@ -269,6 +269,139 @@ GROUP BY salary_in_usd_range;
 - najwięcej zarabie się na kierowniczych stanowiskach, ale najbardziej obsadzone są stanowiska data enegineer, data scientist, dana analyst i najwięcej zarabia data engineer
 - najwięcej jest osób które zarabiają w przedziale 50k - 100k usd/y
 
+# Wnioskowanie statystyczne
+- zbadamy relacje pomiędzy zmiennymi jakościowymi
+- następnie przejdziemy od badania zmiennych ilościowych
+
+- zestawimy w pierwszej kolejności zmienne: work_year z remote_ratio, company_size, exprience_level, job_title
+- przygotujemy tablę krzyżową, wyliczymy wartości oczekiwane, przeliczymy test niezależności chi2, dla porównania 3x3
+- przeliczymy stopień swobody
+- sprawdzimy istotność statystyczną testu chi2 z wartościami krtytycznymi
+
+  ```
+  WITH contingency_table AS (SELECT (r1c1 + r1c2 + r1c3)                                           AS r1t,
+                                  (r2c1 + r2c2 + r2c3)                                           AS r2t,
+                                  (r3c1 + r3c2 + r3c3)                                           AS r3t,
+                                  (r1c1 + r2c1 + r3c1)                                           AS c1t,
+                                  (r1c2 + r2c2 + r3c2)                                           AS c2t,
+                                  (r1c3 + r2c3 + r3c3)                                           AS c3t,
+                                  (r1c1 + r1c2 + r1c3 + r2c1 + r2c2 + r2c3 + r3c1 + r3c2 + r3c3) AS rct,
+                                  r1c1,
+                                  r1c2,
+                                  r1c3,
+                                  r2c1,
+                                  r2c2,
+                                  r2c3,
+                                  r3c1,
+                                  r3c2,
+                                  r3c3
+                           FROM (SELECT SUM(CASE WHEN work_year = 2020 AND job_title = 'Data Engineer' THEN 1.0 END)  AS r1c1,
+                                        SUM(CASE WHEN work_year = 2020 AND job_title = 'Data Scientist' THEN 1.0 END) AS r1c2,
+                                        SUM(CASE WHEN work_year = 2020 AND job_title = 'Data Analyst' THEN 1.0 END)   AS r1c3,
+                                        SUM(CASE WHEN work_year = 2021 AND job_title = 'Data Engineer' THEN 1.0 END)  AS r2c1,
+                                        SUM(CASE WHEN work_year = 2021 AND job_title = 'Data Scientist' THEN 1.0 END) AS r2c2,
+                                        SUM(CASE WHEN work_year = 2021 AND job_title = 'Data Analyst' THEN 1.0 END)   AS r2c3,
+                                        SUM(CASE WHEN work_year = 2022 AND job_title = 'Data Engineer' THEN 1.0 END)  AS r3c1,
+                                        SUM(CASE WHEN work_year = 2022 AND job_title = 'Data Scientist' THEN 1.0 END) AS r3c2,
+                                        SUM(CASE WHEN work_year = 2022 AND job_title = 'Data Analyst' THEN 1.0 END)   AS r3c3
+                                 FROM data_science_salaries))
+```
+
+SELECT (POW(r1c1 - ef_r1c1, 2) / ef_r1c1) +
+       (POW(r1c2 - ef_r1c2, 2) / ef_r1c2) +
+       (POW(r1c3 - ef_r1c3, 2) / ef_r1c3) +
+       (POW(r2c1 - ef_r2c1, 2) / ef_r2c1) +
+       (POW(r2c2 - ef_r2c2, 2) / ef_r2c2) +
+       (POW(r2c3 - ef_r2c3, 2) / ef_r2c3) +
+       (POW(r3c1 - ef_r3c1, 2) / ef_r3c1) +
+       (POW(r3c2 - ef_r3c2, 2) / ef_r3c2) +
+       (POW(r3c3 - ef_r3c3, 2) / ef_r3c3) AS chi2,
+       r1c1 - ef_r1c1,
+       r1c2 - ef_r1c2,
+       r1c3 - ef_r1c3,
+       r2c1 - ef_r2c1,
+       r2c2 - ef_r2c2,
+       r2c3 - ef_r2c3,
+       r3c1 - ef_r3c1,
+       r3c2 - ef_r3c2,
+       r3c3 - ef_r3c3
+FROM (SELECT (r1t * c1t) / rct AS ef_r1c1,
+             (r1t * c2t) / rct AS ef_r1c2,
+             (r1t * c3t) / rct AS ef_r1c3,
+             (r2t * c1t) / rct AS ef_r2c1,
+             (r2t * c2t) / rct AS ef_r2c2,
+             (r2t * c3t) / rct AS ef_r2c3,
+             (r3t * c1t) / rct AS ef_r3c1,
+             (r3t * c2t) / rct AS ef_r3c2,
+             (r3t * c3t) / rct AS ef_r3c3
+      FROM contingency_table),
+     contingency_table;
+```
+- sprawdzamy poziom istotności dla alfa = 0,05 i mniejszych
+- istnieje istotna zależność pomiędzy danym rokiem a typem pracy
+- istnieje istotna zależność pomiędzy danym rokiem a wielkością firmy
+- istnieje istotna zależność pomiędzy danym rokiem a poziomeme doświadczenia
+- istnieje istotna zależność pomiędzy danym rokiem a stanowiskiem
+# Sprawdzamy korelację pomiędzy zarobkami i danym rokiem
+- pytanie czy w kolejnych latach zarobki się zmieniały, a jeżeli tak to jak
+- obliczymmy statystykę Pearsona dla work_year i salary_in_usd
+
+```
+WITH statistics AS (SELECT avg_work_year,
+                           avg_salary,
+                           SQRT(SUM(POW(work_year - avg_work_year, 2)))  AS sqrt_sum_work_year,
+                           SQRT(SUM(POW(salary_in_usd - avg_salary, 2))) AS sqrt_sum_salary
+                    FROM (SELECT AVG(work_year) AS avg_work_year, AVG(salary_in_usd) AS avg_salary
+                          FROM data_science_salaries),
+                         data_science_salaries)
+SELECT r_pearson * SQRT(COUNT(*) - 2) / SQRT(1 - POW(r_pearson, 2)) AS t_value,
+       r_pearson
+FROM (SELECT SUM((work_year - avg_work_year) * (salary_in_usd - avg_salary)) /
+             (sqrt_sum_work_year * sqrt_sum_salary) AS r_pearson
+      FROM statistics,
+           data_science_salaries),
+     data_science_salaries;
+```
+- istnieje słaba dodatnia zależność pomiędzy latami i zarobkami zatem badania zarabiali coraz więcej
+- sprwadzamy czy korelacja jest istotna statystycznie
+- wartość testu jest jest wyższa od poziomu alfa 0,05. Także dla pozostałych wartości alfa.
+- zatem korelacja jest istotna statystycznie
+- i jeszcze sprawadzimy jak zmieniały się zarobki pomiędzy osobami pracującymi zdalnie i stacjonarnie na przestrzeni 3 lat
+- wykorzstamy test tWelcha
+```
+WITH statistics AS (SELECT SUM(POW((CASE WHEN remote_ratio = 100 THEN salary_in_usd END) - avg_salary_remote, 2)) /
+                           (n_remote - 1)     AS variance_salary_remote,
+                           SUM(POW((CASE WHEN remote_ratio = 0 THEN salary_in_usd END) - avg_salary_stationary, 2)) /
+                           (n_stationary - 1) AS variance_salary_stationary,
+                           avg_salary_remote,
+                           avg_salary_stationary,
+                           n_remote,
+                           n_stationary
+                    FROM (SELECT AVG(CASE WHEN remote_ratio = 100 THEN salary_in_usd END) AS avg_salary_remote,
+                                 AVG(CASE WHEN remote_ratio = 0 THEN salary_in_usd END)   AS avg_salary_stationary,
+                                 COUNT(CASE WHEN remote_ratio = 100 THEN 1.0 END)         AS n_remote,
+                                 COUNT(CASE WHEN remote_ratio = 0 THEN 1.0 END)           AS n_stationary
+                          FROM data_science_salaries
+                          WHERE work_year == 2022),
+                         data_science_salaries
+                    WHERE work_year == 2022)
+SELECT (avg_salary_remote - avg_salary_stationary) /
+       SQRT((variance_salary_remote / n_remote) + (variance_salary_stationary / n_stationary)) AS welch_t_test,
+       POW((variance_salary_remote / n_remote) + (variance_salary_stationary / n_stationary), 2) /
+       ((POW(variance_salary_remote / n_remote, 2) / (n_remote - 1)) +
+        (POW(variance_salary_stationary / n_stationary, 2) / (n_stationary - 1)))              AS df
+FROM statistics;
+```
+- mamy stopnie swobody df
+- sprawdzamy w tabeli
+- nie możemy uznać testu t za istotny statystycznie, zatem nie możemy uznać że istnieją istotne różnice pomiędzy zarobkami dla pracy stancjonarnej i dla pracy zdalnej dla 2020, 2021, ale w 2022 istnieją statystycznie istotne różnice dla pracy zdalnej i pracy stacjonarnej
+#Podsumowanie
+- w brażny analiz danych zarabia się co raz więcej
+- najbardziej popularnym stanowiskiem jest data scientist
+- najwięcej zarobi data engineer
+- najlepiej zarabiamy w dużych firmach
+- istnieją istotne różnice w zarobkach pomiędzy pracą zdalną i stacjonarną tylko w 2022 roku
+  
 
 
 
